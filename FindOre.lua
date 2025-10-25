@@ -6,6 +6,39 @@ term.clear()
 local geo = peripheral.find("geoScanner")
 if not geo then error("geo scanner peripheral not found") end
 
+-- Try to get computer's absolute position
+local computerX, computerY, computerZ = gps.locate()
+local usingRelative = false
+
+-- If GPS fails, ask for manual input
+if not computerX then
+    print("GPS position not available.")
+    print("Would you like to enter your coordinates manually? (y/n)")
+    local response = read():lower()
+    
+    if response == "y" then
+        print("Enter X coordinate (or press enter to skip):")
+        computerX = tonumber(read()) or 0
+        print("Enter Y coordinate (or press enter to skip):")
+        computerY = tonumber(read()) or 0
+        print("Enter Z coordinate (or press enter to skip):")
+        computerZ = tonumber(read()) or 0
+        
+        if computerX == 0 and computerY == 0 and computerZ == 0 then
+            print("No coordinates provided. Using relative coordinates.")
+            usingRelative = true
+        else
+            print(string.format("Using provided position: X:%d Y:%d Z:%d", computerX, computerY, computerZ))
+        end
+    else
+        print("Using relative coordinates.")
+        computerX, computerY, computerZ = 0, 0, 0
+        usingRelative = true
+    end
+end
+
+print("Computer position:", computerX, computerY, computerZ)
+
 -- Define base ores and their variants
 local base_ores = {
     "ancient_debris",
@@ -31,7 +64,18 @@ print("Starting search.")
 for i, data in ipairs(scan) do
     for _, ore in ipairs(ores_to_find) do
         if data.name == ore then
-            print(data.name .. ", X: " .. data.x .. "  Y: " .. data.y .. "  Z: " .. data.z)
+            -- Calculate coordinates
+            local absoluteX = computerX + data.x
+            local absoluteY = computerY + data.y
+            local absoluteZ = computerZ + data.z
+            
+            if usingRelative then
+                print(string.format("%s at Relative: X:%d Y:%d Z:%d (from scanner position)",
+                    data.name, data.x, data.y, data.z))
+            else
+                print(string.format("%s at World: X:%d Y:%d Z:%d",
+                    data.name, absoluteX, absoluteY, absoluteZ))
+            end
         end
     end
 end
