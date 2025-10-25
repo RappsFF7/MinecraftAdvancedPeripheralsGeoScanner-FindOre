@@ -3,8 +3,10 @@
 -- Loosely based on toastonrye's BrCKkttY script (https://pastebin.com/BrCKkttY, https://www.youtube.com/watch?v=9PRjpd4lUDk)
 
 -- Configuration
-local scanRange = 16  -- Range of the scan in blocks
-local veinSize = 5    -- Size of ore veins to consider as part of the same cluster
+--   Range of the scan in blocks
+local scanRange = 16
+--   Max size to consider ore in same vein
+local veinSize = 10
 
 -- Define base ores
 local base_ores = {
@@ -91,23 +93,27 @@ for i, data in ipairs(scan) do
             -- Check if this ore is part of an existing vein
             if not isWithinVeinRange(discoveredVeins[data.name], data.x, data.y, data.z) then
                 -- Calculate coordinates
-                local absoluteX = computerX + data.x
-                local absoluteY = computerY + data.y
-                local absoluteZ = computerZ + data.z
+                local displayX = computerX + data.x
+                local displayY = computerY + data.y
+                local displayZ = computerZ + data.z
                 
                 -- Add to discovered veins
                 table.insert(discoveredVeins[data.name], {x = data.x, y = data.y, z = data.z})
                 
                 -- Print the location
                 if usingRelative then
-                    print(string.format("%s at Relative: X:%d Y:%d Z:%d (from scanner position)",
-                        data.name, data.x, data.y, data.z))
-                else
-                    print(string.format("%s at World: X:%d Y:%d Z:%d",
-                        data.name, absoluteX, absoluteY, absoluteZ))
+                    print(string.format("%s: \nX:%d Y:%d Z:%d",
+                        data.name, displayX, displayY, displayZ))
                 end
             end
         end
     end
 end
+
+if usingRelative then
+  print("(Coordinates are relative)")
+else 
+  print("(Coordinates are absolute)")
+end
+
 print("Search done.")
